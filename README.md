@@ -63,4 +63,4 @@ Start the server
 
 ## Link to the site
 
-https://librarize.vercel.app/
+https://librarize-risriddles-projects.vercel.app/
