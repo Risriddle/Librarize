@@ -908,10 +908,9 @@ export default function Home() {
       )}
 
       {/* Upload Modal */}
-      {showUploadModal && (
+      {/* {showUploadModal && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
           <div className="bg-amber-900 border border-amber-700 rounded-lg p-6 max-w-xl w-full shadow-2xl relative">
-            {/* Close Button */}
             <button
               onClick={() => {
                 setShowUploadModal(false);
@@ -925,7 +924,33 @@ export default function Home() {
             <UploadPdf />
           </div>
         </div>
-      )}
+      )} */}
+
+
+
+{showUploadModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+    <div className="bg-amber-900 border border-amber-700 rounded-lg p-6 max-w-xl w-full shadow-2xl relative">
+      {/* Close Button */}
+      <button
+        onClick={() => {
+          setShowUploadModal(false);
+          fetchPdfFiles();
+        }}
+        className="absolute top-2 right-2 text-amber-100 hover:text-white text-xl"
+      >
+        <X />
+      </button>
+
+      <UploadPdf 
+        onUploadSuccess={() => {
+          setShowUploadModal(false);
+          fetchPdfFiles();
+        }} 
+      />
+    </div>
+  </div>
+)}
 
       {/* TBR Jar Modal */}
       {showTbrJar && (

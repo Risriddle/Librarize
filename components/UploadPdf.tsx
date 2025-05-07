@@ -145,8 +145,10 @@
 
 import { useState, useRef } from "react";
 import { FileText,FileCheck,X,BookCopy } from "lucide-react";
-
-export default function UploadPdf() {
+interface UploadPdfProps {
+  onUploadSuccess?: () => void;
+}
+export default function UploadPdf({ onUploadSuccess }: UploadPdfProps) {
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState<React.ReactNode>(""); 
 
@@ -234,6 +236,9 @@ export default function UploadPdf() {
       setFile(null);
       setAuthor("");
       setTitle("");
+      if (onUploadSuccess) {
+        onUploadSuccess(); 
+      }
     } else {
       setMessage(
         <>
