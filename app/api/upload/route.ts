@@ -127,8 +127,89 @@
 
 
 
+// import { NextResponse } from "next/server";
+// import { uploadPDFToS3 } from "@/lib/s3Uploader";
+// import dbConnect from "@/lib/dbConnect";
+// import PdfFile from "@/lib/models/Pdf";
+
+// export async function POST(req: Request) {
+//   await dbConnect();
+
+//   try {
+//     const formData = await req.formData();
+//     const file = formData.get("file") as File;
+//     const author = formData.get("author");
+//     const rawTitle = formData.get("title") as string | null;
+
+//     if (!rawTitle) throw new Error("Title is required");
+//     const title = rawTitle;
+
+//     if (!file || file.type !== "application/pdf") {
+//       return NextResponse.json({ error: "Only PDFs allowed" }, { status: 400 });
+//     }
+
+//     const arrayBuffer = await file.arrayBuffer();
+//     const buffer = Buffer.from(arrayBuffer);
+
+//     // Upload PDF to S3
+//     const pdfUrl = await uploadPDFToS3(buffer, file.name, file.type);
+//     const url = new URL(pdfUrl);
+//     const key = url.pathname.slice(1); // Remove leading slash
+
+//     //  Generate cover image using Imgix
+//     const IMGIX_DOMAIN = "riddle-454877191.imgix.net"; // replace with your Imgix domain
+//     const coverImageUrl = `https://${IMGIX_DOMAIN}/${key}?page=1&fm=jpg&w=600&h=800&fit=crop`;
+
+//     //  Auto-rename logic
+//     async function generateUniqueTitle(baseTitle: string) {
+//       let unique = baseTitle;
+//       let count = 1;
+//       while (await PdfFile.findOne({ title: unique })) {
+//         unique = `${baseTitle} (${count})`;
+//         count++;
+//       }
+//       return unique;
+//     }
+
+//     const uniqueTitle = await generateUniqueTitle(title);
+
+//     //  Save to DB
+//     const newPdf = await PdfFile.create({
+//       fileName: file.name,
+//       fileUrl: pdfUrl,
+//       coverImageUrl,
+//       title: uniqueTitle,
+//       author,
+//       key,
+//       rating: 0,
+//       review: ""
+//     });
+
+//     console.log(newPdf, "PDF and cover image added to DB");
+
+//     return NextResponse.json({ pdfUrl, coverImageUrl });
+//   } catch (err) {
+//     console.error("Upload error:", err);
+//     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+//   }
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import { NextResponse } from "next/server";
-import { uploadPDFToS3 } from "@/lib/s3Uploader";
 import dbConnect from "@/lib/dbConnect";
 import PdfFile from "@/lib/models/Pdf";
 
@@ -136,25 +217,15 @@ export async function POST(req: Request) {
   await dbConnect();
 
   try {
-    const formData = await req.formData();
-    const file = formData.get("file") as File;
-    const author = formData.get("author");
-    const rawTitle = formData.get("title") as string | null;
+    const { fileUrl, fileName,title,author,key } = await req.json();
+    
 
-    if (!rawTitle) throw new Error("Title is required");
-    const title = rawTitle;
+    if (!title) throw new Error("Title is required");
+    const utitle = title;
 
-    if (!file || file.type !== "application/pdf") {
-      return NextResponse.json({ error: "Only PDFs allowed" }, { status: 400 });
-    }
+    
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    // Upload PDF to S3
-    const pdfUrl = await uploadPDFToS3(buffer, file.name, file.type);
-    const url = new URL(pdfUrl);
-    const key = url.pathname.slice(1); // Remove leading slash
+   
 
     //  Generate cover image using Imgix
     const IMGIX_DOMAIN = "riddle-454877191.imgix.net"; // replace with your Imgix domain
@@ -171,12 +242,12 @@ export async function POST(req: Request) {
       return unique;
     }
 
-    const uniqueTitle = await generateUniqueTitle(title);
+    const uniqueTitle = await generateUniqueTitle(utitle);
 
     //  Save to DB
     const newPdf = await PdfFile.create({
-      fileName: file.name,
-      fileUrl: pdfUrl,
+      fileName: fileName,
+      fileUrl: fileUrl,
       coverImageUrl,
       title: uniqueTitle,
       author,
@@ -187,7 +258,7 @@ export async function POST(req: Request) {
 
     console.log(newPdf, "PDF and cover image added to DB");
 
-    return NextResponse.json({ pdfUrl, coverImageUrl });
+    return NextResponse.json({ fileUrl, coverImageUrl });
   } catch (err) {
     console.error("Upload error:", err);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
