@@ -18,6 +18,7 @@ import {
   BookMarked,
   X,
   Star,
+  Edit,
   BookAIcon,
   AlertTriangle,
 } from "lucide-react";
@@ -40,7 +41,7 @@ export default function Home() {
     null
   );
   const [showTbrJar, setShowTbrJar] = useState(false);
- 
+
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [currentBookForReview, setCurrentBookForReview] = useState<string>("");
 
@@ -51,6 +52,15 @@ export default function Home() {
   });
 
   const [dnfBooks, setDnfBooks] = useState<string[]>([]);
+  const [editBookModal, setEditBookModal] = useState({
+    isOpen: false,
+    bookId: "",
+    bookTitle: "",
+  });
+  const [editBookData, setEditBookData] = useState({
+    title: "",
+    author: "",
+  });
 
   useEffect(() => {
     fetchPdfFiles();
@@ -72,7 +82,6 @@ export default function Home() {
     if (storedTbrBooks) {
       setTbrBooks(JSON.parse(storedTbrBooks));
     }
-   
 
     const style = document.createElement("style");
     style.innerHTML = `
@@ -98,6 +107,43 @@ export default function Home() {
     };
   }, []);
 
+  // Add this function to load book data when the edit modal opens
+  useEffect(() => {
+    if (editBookModal.isOpen && editBookModal.bookId) {
+      const bookToEdit = books.find(
+        (book) => book._id === editBookModal.bookId
+      );
+      if (bookToEdit) {
+        setEditBookData({
+          title: bookToEdit.title || "",
+          author: bookToEdit.author || "",
+        });
+      }
+    }
+  }, [editBookModal.isOpen, editBookModal.bookId, books]);
+
+  // Add this function to handle form submission
+  const handleEditBookSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      await axios.put(`/api/books/${editBookModal.bookId}`, {
+        title: editBookData.title,
+        author: editBookData.author,
+      });
+
+      // Refresh book list after update
+      fetchPdfFiles();
+
+      // Close modal and reset form
+      setEditBookModal({ isOpen: false, bookId: "", bookTitle: "" });
+      setEditBookData({ title: "", author: "" });
+    } catch (error) {
+      console.error("Error updating book:", error);
+      // Optionally add error handling UI here
+    }
+  };
+
   const fetchPdfFiles = async () => {
     try {
       const response = await axios.get("/api/pdf-files");
@@ -109,37 +155,42 @@ export default function Home() {
     setLoading(false);
   };
 
-
   const handleDeleteBook = async (bookId: string) => {
     try {
       await axios.delete(`/api/books/${bookId}`);
-  
+
       // Filter each list
-      const updatedCurrentlyReading = currentlyReading.filter((id) => id !== bookId);
-      const updatedCompletedBooks = completedBooks.filter((id) => id !== bookId);
+      const updatedCurrentlyReading = currentlyReading.filter(
+        (id) => id !== bookId
+      );
+      const updatedCompletedBooks = completedBooks.filter(
+        (id) => id !== bookId
+      );
       const updatedTbrBooks = tbrBooks.filter((id) => id !== bookId);
       const updatedDnfBooks = dnfBooks.filter((id) => id !== bookId);
-  
+
       // Update state
       setCurrentlyReading(updatedCurrentlyReading);
       setCompletedBooks(updatedCompletedBooks);
       setTbrBooks(updatedTbrBooks);
       setDnfBooks(updatedDnfBooks);
-  
+
       // Update localStorage
       updateLocalStorage("currentlyReading", updatedCurrentlyReading);
       updateLocalStorage("completedBooks", updatedCompletedBooks);
       updateLocalStorage("tbrBooks", updatedTbrBooks);
       updateLocalStorage("dnfBooks", updatedDnfBooks);
-  
+
       // Update reading challenge if needed
       // Optional: If challenge count depends on completed books
-      const challenge = JSON.parse(localStorage.getItem("readingChallenge") || "0");
+      const challenge = JSON.parse(
+        localStorage.getItem("readingChallenge") || "0"
+      );
       if (completedBooks.includes(bookId)) {
         const updatedChallenge = challenge > 0 ? challenge - 1 : 0;
         localStorage.setItem("readingChallenge", updatedChallenge.toString());
       }
-  
+
       // Refresh book list and clear confirmation
       fetchPdfFiles();
       setDeleteConfirmation(null);
@@ -147,9 +198,8 @@ export default function Home() {
       console.error("Error deleting book:", error);
     }
   };
-  
 
-  const updateLocalStorage = (key: string, value:unknown) => {
+  const updateLocalStorage = (key: string, value: unknown) => {
     localStorage.setItem(key, JSON.stringify(value));
   };
 
@@ -181,8 +231,6 @@ export default function Home() {
         const updatedCompleted = completedBooks.filter((id) => id !== bookId);
         setCompletedBooks(updatedCompleted);
         updateLocalStorage("completedBooks", updatedCompleted);
-
-       
       }
     }
 
@@ -213,7 +261,6 @@ export default function Home() {
     // If already completed, remove it
     if (completedBooks.includes(bookId)) {
       updatedCompleted = completedBooks.filter((id) => id !== bookId);
-    
     } else {
       // Add to completed and remove from currently reading/TBR if present
       updatedCompleted = [...completedBooks, bookId];
@@ -229,7 +276,6 @@ export default function Home() {
         setTbrBooks(updatedTbr);
         updateLocalStorage("tbrBooks", updatedTbr);
       }
-      
     }
     setCompletedBooks(updatedCompleted);
     updateLocalStorage("completedBooks", updatedCompleted);
@@ -267,8 +313,6 @@ export default function Home() {
   );
 
   const tbrBooksList = books.filter((book) => tbrBooks.includes(book._id));
-
-  
 
   // Add this function to handle book click
   const handleBookClick = (e: React.FormEvent, book: Book) => {
@@ -671,8 +715,6 @@ export default function Home() {
                           </h2>
 
                           <div className="space-y-4">
-                            
-
                             {/* Books Summary Section */}
                             <div className="grid grid-cols-4 gap-2 text-center border-b border-amber-700 pb-3">
                               <div>
@@ -1090,6 +1132,25 @@ export default function Home() {
 
                   <button
                     onClick={() => {
+                      setEditBookModal({
+                        isOpen: true,
+                        bookId: bookOptionsModal.bookId,
+                        bookTitle: bookOptionsModal.bookTitle,
+                      });
+                      setBookOptionsModal({
+                        isOpen: false,
+                        bookId: "",
+                        bookTitle: "",
+                      });
+                    }}
+                    className="p-2 bg-amber-800/80 hover:bg-amber-700 text-amber-100 rounded-lg transition-all flex items-center gap-2 text-sm"
+                  >
+                    <Edit size={16} />
+                    <span className="truncate">Edit Details</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
                       setCurrentBookForReview(bookOptionsModal.bookId);
                       setShowReviewModal(true);
                       setBookOptionsModal({
@@ -1144,6 +1205,99 @@ export default function Home() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Book Modal */}
+      {editBookModal.isOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-amber-950 to-amber-900 border border-amber-700/50 rounded-xl p-6 max-w-md w-full shadow-2xl">
+            {/* Close button */}
+            <button
+              onClick={() =>
+                setEditBookModal({ isOpen: false, bookId: "", bookTitle: "" })
+              }
+              className="absolute top-3 right-3 text-amber-400 hover:text-amber-200 transition-colors"
+              aria-label="Close"
+            >
+              <X size={20} />
+            </button>
+
+            {/* Modal header */}
+            <div className="mb-6 border-b border-amber-700/40 pb-4">
+              <h3 className="text-xl font-semibold text-amber-100">
+                Edit Book Details
+              </h3>
+              <p className="text-amber-400/80 text-sm">
+                Update title and author information
+              </p>
+            </div>
+
+            {/* Edit form */}
+            <form onSubmit={handleEditBookSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label
+                  htmlFor="book-title"
+                  className="text-amber-200 text-sm block"
+                >
+                  Title
+                </label>
+                <input
+                  id="book-title"
+                  type="text"
+                  value={editBookData.title}
+                  onChange={(e) =>
+                    setEditBookData({ ...editBookData, title: e.target.value })
+                  }
+                  className="w-full p-2 bg-amber-900/70 border border-amber-700 rounded-lg text-amber-100 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none"
+                  placeholder="Book title"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="book-author"
+                  className="text-amber-200 text-sm block"
+                >
+                  Author
+                </label>
+                <input
+                  id="book-author"
+                  type="text"
+                  value={editBookData.author}
+                  onChange={(e) =>
+                    setEditBookData({ ...editBookData, author: e.target.value })
+                  }
+                  className="w-full p-2 bg-amber-900/70 border border-amber-700 rounded-lg text-amber-100 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none"
+                  placeholder="Author name"
+                  required
+                />
+              </div>
+
+              <div className="pt-4 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditBookModal({
+                      isOpen: false,
+                      bookId: "",
+                      bookTitle: "",
+                    })
+                  }
+                  className="px-4 py-2 bg-amber-700/60 hover:bg-amber-600 text-amber-100 rounded-lg transition-colors text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-amber-100 rounded-lg transition-colors text-sm"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
