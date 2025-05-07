@@ -16,6 +16,7 @@ import {
   Moon,
   Sun,
   Timer,
+  Megaphone,
 } from "lucide-react";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation";
@@ -620,7 +621,7 @@ const ViewPdf = ({ url, pdfId }: Props) => {
           <div className="bg-amber-100 rounded-xl shadow-lg p-6 max-w-md w-full transform transition-all">
             <div className="flex justify-between items-center mb-3 border-b pb-2">
               <h2 className="text-xl text-amber-800 font-semibold">
-                📘 Dictionary
+                <BookHeart/> Dictionary
               </h2>
               <button
                 onClick={() => setShowDictionaryModal(false)}
@@ -638,7 +639,7 @@ const ViewPdf = ({ url, pdfId }: Props) => {
                   onClick={() => new Audio(audioUrl).play()}
                   className="flex items-center text-amber-600 hover:text-amber-800 text-sm mb-2"
                 >
-                  <span className="mr-1">🔊</span> Hear Pronunciation
+                  <span className="mr-1"><Megaphone/></span> Hear Pronunciation
                 </button>
               )}
               <div className="bg-amber-50 p-3 rounded-md border border-amber-200">
@@ -668,7 +669,7 @@ const ViewPdf = ({ url, pdfId }: Props) => {
           <div className="bg-amber-100 rounded-xl shadow-lg p-6 max-w-lg w-full transform transition-all max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-3 border-b pb-2">
               <h2 className="text-xl text-amber-800 font-semibold">
-                💬 Save Quote
+                <MessageCircleMore/> Save Quote
               </h2>
               <button
                 onClick={() => setShowQuoteModal(false)}
@@ -719,7 +720,7 @@ const ViewPdf = ({ url, pdfId }: Props) => {
           <div className="bg-amber-100 max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 w-full max-w-xl transform transition-all">
             <div className="flex justify-between items-center mb-4 border-b pb-2">
               <h2 className="text-xl text-amber-800 font-semibold">
-                📝 Vocabulary List
+                <BookHeart/> Vocabulary List
               </h2>
               <button
                 onClick={() => setShowVocabModal(false)}
@@ -756,7 +757,7 @@ const ViewPdf = ({ url, pdfId }: Props) => {
           <div className="bg-amber-100 max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 w-full max-w-2xl transform transition-all">
             <div className="flex justify-between items-center mb-4 border-b pb-2">
               <h2 className="text-xl text-amber-800 font-semibold">
-                💬 Saved Quotes
+                <MessageCircleMore/> Saved Quotes
               </h2>
               <button
                 onClick={() => setShowQuotesModal(false)}
@@ -821,7 +822,7 @@ const ViewPdf = ({ url, pdfId }: Props) => {
           <div className="bg-amber-100 rounded-xl shadow-lg p-6 max-w-md w-full transform transition-all">
             <div className="flex justify-between items-center mb-3 border-b pb-2">
               <h2 className="text-xl text-amber-800 font-semibold">
-                🔖 Add Bookmark
+                <BookmarkCheck/> Add Bookmark
               </h2>
               <button
                 onClick={() => setShowBookmarkModal(false)}
@@ -870,7 +871,7 @@ const ViewPdf = ({ url, pdfId }: Props) => {
           <div className="bg-amber-100 max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 w-full max-w-xl transform transition-all">
             <div className="flex justify-between items-center mb-4 border-b pb-2">
               <h2 className="text-xl text-amber-800 font-semibold">
-                📑 Bookmarks
+                <BookMarked/> Bookmarks
               </h2>
               <button
                 onClick={() => setShowBookmarksModal(false)}
@@ -920,7 +921,7 @@ const ViewPdf = ({ url, pdfId }: Props) => {
           <div className="bg-amber-100 rounded-xl shadow-lg p-6 max-w-md w-full transform transition-all">
             <div className="flex justify-between items-center mb-3 border-b pb-2">
               <h2 className="text-xl text-amber-800 font-semibold">
-                ⏱️ Reading Timer
+                <Timer/> Reading Timer
               </h2>
               <button
                 onClick={() => {

@@ -3,11 +3,11 @@ import dbConnect from '@/lib/dbConnect';
 import MonthlyBooks from '@/lib/models/MonthlyBooks';
 
 
+type Params = Promise<{ bookId: string,month:string }>;
 
 
-
-export async function DELETE(req: Request, context: {params: {month: string; bookId: string;}}) {
-  const { month, bookId } = context.params;
+export async function DELETE(req: Request, {params}: {params:Params}) {
+  const { bookId,month }: {bookId: string,month:string} = await params; 
   const url = new URL(req.url);
   const year = url.searchParams.get('year');  // Extract year from query params
 

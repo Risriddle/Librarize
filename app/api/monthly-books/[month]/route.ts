@@ -3,9 +3,11 @@ import { NextResponse } from 'next/server';
 import  dbConnect  from '@/lib/dbConnect';
 import MonthlyBooks from '@/lib/models/MonthlyBooks';
 
-export async function GET(req: Request, context: { params: { month: string } }) {
+type Params = Promise<{ month: string }>;
+
+export async function GET(req: Request, {params}: { params: Params }) {
   await dbConnect();
-  const {month}=context.params
+  const { month }: {month:string} = await params; 
   try {
     const data = await MonthlyBooks.findOne({ month: month });
     return NextResponse.json(data || { month:month, books: [] }, { status: 200 });

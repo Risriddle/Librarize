@@ -7,9 +7,10 @@ import Vocab from "@/lib/models/Vocab";
 import Quote from "@/lib/models/Quote";
 import { Bookmark } from "@/lib/models/Bookmark";
 
+type Params = Promise<{ bookId: string }>;
 
-export async function GET(req: NextRequest, context: { params: { bookId: string } }){
-const { bookId } = context.params;
+export async function GET(req: NextRequest,{params}: { params: Params }){
+  const { bookId }: {bookId: string} = await params; 
 
   try {
     await dbConnect();
@@ -30,8 +31,8 @@ const { bookId } = context.params;
 
 
 
-export async function PUT(req: NextRequest, context: {params:{bookId: string}}) {
-  const { bookId } = context.params;
+export async function PUT(req: NextRequest, {params}: {params:Params}) {
+  const { bookId }: {bookId: string} = await params; 
   const { title, author } = await req.json(); 
 
   try {
@@ -65,8 +66,8 @@ const s3Client = new S3Client({
   },
 });
 
-export async function DELETE(req: NextRequest, context: {params:{bookId: string}}) {
-  const { bookId } = context.params;
+export async function DELETE(req: NextRequest, {params}: {params:Params}) {
+  const { bookId }: {bookId: string} = await params; 
 
   try {
     await dbConnect();
