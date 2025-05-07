@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import Rating from "@/lib/models/Rating";
 import PdfFile from "@/lib/models/Pdf";
-import MonthlyBooks from "@/lib/models/YearlyBooks";
-import mongoose from "mongoose";
+
 
 export async function POST(req: Request) {
   try {
@@ -39,14 +38,7 @@ console.log(book,pdfId,"---------------------------------------------------")
       book.updatedAt = new Date();
       await book.save();
       
-      const objectPdfId = new mongoose.Types.ObjectId(pdfId);
-      
-      await MonthlyBooks.updateOne(
-        { "books._id": objectPdfId },
-        { $set: { "books.$.rating": rating } }
-      );
-
-
+     
       return NextResponse.json({ success: true, data: existing });
     }
 
@@ -65,13 +57,7 @@ console.log(book,pdfId,"---------------------------------------------------")
     await book.save();
 
 
-    const objectPdfId = new mongoose.Types.ObjectId(pdfId);
-    
-    await MonthlyBooks.updateOne(
-      { "books._id": objectPdfId },
-      { $set: { "books.$.rating": rating } }
-    );
-
+   
 
     return NextResponse.json({ success: true, data: newRating });
   } catch (err: unknown) {

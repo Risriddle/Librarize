@@ -295,7 +295,7 @@ export default function BookTracker() {
     fetchBooks();
   }, []);
 
-  const fetchAllMonthlyBooks = async () => {
+  const fetchAllMonthlyBooks = async (selectedYear:number) => {
     setIsLoadingMonthlyBooks(true);
     try {
       const response = await fetch(`/api/monthly-books/${selectedYear}`);
@@ -317,7 +317,7 @@ export default function BookTracker() {
 
   useEffect(() => {
     if (yearLoaded) {
-      fetchAllMonthlyBooks();
+      fetchAllMonthlyBooks(selectedYear);
     }
   }, [selectedYear, yearLoaded]);
   
@@ -422,7 +422,7 @@ export default function BookTracker() {
       console.log(year,"in handle dropppppppppppppppppppppppppp")
       // Save ALL books for this month to API with the selected year
       await saveBooksToAPI(month, allMonthBooks, year);
-      
+      fetchAllMonthlyBooks(year)
     }
   };
 
@@ -756,7 +756,7 @@ export default function BookTracker() {
                                 Available Books:
                               </h4>
                               <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
-                                {filteredBooks.slice(0, 6).map((book) => (
+                                {availableBooks.map((book) => (
                                   <button
                                     key={book._id}
                                     onClick={() => addBookToMonth(book)}

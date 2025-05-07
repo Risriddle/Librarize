@@ -29,6 +29,9 @@ export async function POST(req: Request,{params}:{params:Params}) {
   console.log(month,year,"post year>month----------------------------")
   const {books: incomingBooks }: { books: Book[]} = await req.json();
 
+
+   console.log(incomingBooks,"books in api------------------------------------------------------")
+
   try {
     // Find the year document
     let yearDoc = await YearlyBooks.findOne({ year });
@@ -39,9 +42,11 @@ export async function POST(req: Request,{params}:{params:Params}) {
         year,
         months: [{ month, books: incomingBooks }]
       });
+
     } else {
       // Find the month entry inside the year document
       const monthEntry = yearDoc.months.find((m: MonthlyBookEntry) => m.month === month);
+
 
       if (!monthEntry) {
         // Add new month with books

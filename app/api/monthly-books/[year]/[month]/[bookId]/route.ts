@@ -3,12 +3,8 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import YearlyBooks from '@/lib/models/YearlyBooks';
 
-type Params = {
-  bookId: string;
-  month: string;
-  year: string;
-};
 
+type Params = Promise<{ bookId: string,month: string,year: number; }>;
 
 type Book = {
   _id: string;
@@ -27,7 +23,7 @@ export async function DELETE(
   req: Request,
   { params }: { params: Params }
 ) {
-  const { bookId, month, year } = params;
+  const { bookId, month, year }:{bookId:string,month:string,year:number} = await params;
 
   if (!year || !month || !bookId) {
     return NextResponse.json({ error: 'Year, month, and bookId are required' }, { status: 400 });
