@@ -12,7 +12,7 @@ const s3 = new S3Client({
 });
 
 export async function POST(req: Request) {
-  const { fileName, fileType } = await req.json();
+  const { fileName } = await req.json();
   const key = `pdfs/${randomUUID()}-${fileName}`;
 
   const command = new PutObjectCommand({

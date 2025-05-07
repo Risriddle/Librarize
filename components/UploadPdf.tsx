@@ -177,7 +177,7 @@ export default function UploadPdf() {
       method: "POST",
       body: JSON.stringify({
         fileName: file.name,
-        fileType: file.type,
+        
       }),
       headers: {
         "Content-Type": "application/json",
@@ -222,7 +222,7 @@ export default function UploadPdf() {
       }),
     });
   
-    const saveData = await saveRes.json();
+    await saveRes.json();
   
     if (saveRes.ok) {
       setMessage(
