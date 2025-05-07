@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import ViewPdf from '@/components/ViewPdf';
+import dynamic from 'next/dynamic';
+
+const ViewPdf = dynamic(() => import('@/components/ViewPdf'), {
+  ssr: false,
+});
+// import ViewPdf from '@/components/ViewPdf';
 import { useParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Loader from '@/components/Loader';
