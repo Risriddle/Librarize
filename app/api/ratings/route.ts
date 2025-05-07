@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import Rating from "@/lib/models/Rating";
 import PdfFile from "@/lib/models/Pdf";
-import MonthlyBooks from "@/lib/models/MonthlyBooks";
+import MonthlyBooks from "@/lib/models/YearlyBooks";
 import mongoose from "mongoose";
 
 export async function POST(req: Request) {

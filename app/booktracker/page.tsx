@@ -90,12 +90,13 @@ const MonthCalendar = ({
   handleEdit,
   onDrop,
   onRemoveBook,
+  selectedYear,
   isLoading,
 }: {
   month: string;
   books: Book[];
   handleEdit: (month: string) => void;
-  onDrop: (book: Book, month: string) => Promise<void>;
+  onDrop: (book: Book, month: string, year: number) => Promise<void>;
   onRemoveBook: (month: string, bookId: string) => void;
   selectedYear: number;
   isLoading: boolean;
@@ -103,7 +104,7 @@ const MonthCalendar = ({
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "BOOK",
     drop: (item: Book) => {
-      onDrop(item, month);
+      onDrop(item, month, selectedYear);
       return { month, book: item };
     },
     collect: (monitor) => ({
@@ -258,11 +259,20 @@ export default function BookTracker() {
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedYear, setSelectedYear] = useState<number>(
-    new Date().getFullYear()
-  );
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [yearLoaded, setYearLoaded] = useState(false);
   const [isLoadingMonthlyBooks, setIsLoadingMonthlyBooks] = useState(true);
 
+
+  useEffect(() => {
+    const storedYear = localStorage.getItem("selectedYear");
+    if (storedYear) {
+      setSelectedYear(parseInt(storedYear, 10));
+    }
+    setYearLoaded(true);
+  }, []);
+  
+  
   // Fetch books from API - simplified since ratings are included
   useEffect(() => {
     const fetchBooks = async () => {
@@ -288,7 +298,7 @@ export default function BookTracker() {
   const fetchAllMonthlyBooks = async () => {
     setIsLoadingMonthlyBooks(true);
     try {
-      const response = await fetch(`/api/monthly-books?year=${selectedYear}`);
+      const response = await fetch(`/api/monthly-books/${selectedYear}`);
       if (!response.ok) {
         throw new Error("Failed to fetch monthly books");
       }
@@ -303,13 +313,25 @@ export default function BookTracker() {
     }
   };
 
+  
+
   useEffect(() => {
-    fetchAllMonthlyBooks();
-  }, [selectedYear]);
+    if (yearLoaded) {
+      fetchAllMonthlyBooks();
+    }
+  }, [selectedYear, yearLoaded]);
+  
 
   const handleAddBook = () => {
     setIsAddingBooks(true);
   };
+
+  const updateYear = (year: number) => {
+    setSelectedYear(year);
+    localStorage.setItem("selectedYear", year.toString());
+  };
+  
+  
 
   const handleMonthSelect = (month: string) => {
     setSelectedMonth(month);
@@ -317,14 +339,15 @@ export default function BookTracker() {
     setBookInputs(booksPerMonth[month] || []);
   };
 
-  const saveBooksToAPI = async (month: string, books: Book[]) => {
+  const saveBooksToAPI = async (month: string, books: Book[],selectedYear:number) => {
     try {
-      const response = await fetch("/api/monthly-books", {
+      console.log(selectedYear,"selceted year in save books to apiiiiiiiiiiiiiii")
+      const response = await fetch(`/api/monthly-books/${selectedYear}/${month}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ month, books, year: selectedYear }),
+        body: JSON.stringify({books}),
       });
 
       if (!response.ok) {
@@ -337,10 +360,10 @@ export default function BookTracker() {
     }
   };
 
-  const removeBooksFromAPI = async (month: string, bookId: string) => {
+  const removeBooksFromAPI = async (month: string, bookId: string,selectedYear:number) => {
     try {
       const response = await fetch(
-        `/api/monthly-books/${month}/${bookId}?year=${selectedYear}`,
+        `/api/monthly-books/${selectedYear}/${month}/${bookId}`,
         {
           method: "DELETE",
           headers: {
@@ -360,14 +383,14 @@ export default function BookTracker() {
     }
   };
 
-  const saveBooks = async () => {
+  const saveBooks = async (year: number) => {
     const updatedBooks = {
       ...booksPerMonth,
       [selectedMonth]: bookInputs,
     };
 
     setBooksPerMonth(updatedBooks);
-    await saveBooksToAPI(selectedMonth, bookInputs);
+    await saveBooksToAPI(selectedMonth, bookInputs,year);
 
     setIsAddingBooks(false);
     setSelectedMonth("");
@@ -384,26 +407,28 @@ export default function BookTracker() {
     // Check if book already exists in the month
     const existingBooks = booksPerMonth[month] || [];
     const bookExists = existingBooks.some((b) => b._id === book._id);
+    const y=localStorage.getItem("selectedYear") || ""
+    const year=parseInt(y,10)
 
     if (!bookExists) {
       // No need to fetch rating again, just use the book as is
       const allMonthBooks = [...existingBooks, book];
-
+  
       // Update state with ALL books for this month
       setBooksPerMonth((prevState) => ({
         ...prevState,
         [month]: allMonthBooks,
       }));
-
-      // Save ALL books for this month to API
-      await saveBooksToAPI(month, allMonthBooks);
-      fetchAllMonthlyBooks();
+      console.log(year,"in handle dropppppppppppppppppppppppppp")
+      // Save ALL books for this month to API with the selected year
+      await saveBooksToAPI(month, allMonthBooks, year);
+      
     }
   };
 
   const removeBookFromMonth = (month: string, bookId: string) => {
     if (booksPerMonth[month]) {
-      removeBooksFromAPI(month, bookId);
+      removeBooksFromAPI(month, bookId,selectedYear);
       setBooksPerMonth({
         ...booksPerMonth,
         [month]: booksPerMonth[month].filter((book) => book._id !== bookId),
@@ -516,9 +541,10 @@ export default function BookTracker() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={() => setSelectedYear((prev) => prev - 1)}
+                    onClick={() => updateYear(selectedYear - 1)}
                       className="bg-amber-700 text-white p-1 rounded hover:bg-amber-600"
                     >
+                      
                       <svg
                         className="w-5 h-5"
                         fill="none"
@@ -538,7 +564,7 @@ export default function BookTracker() {
                       {selectedYear}
                     </span>
                     <button
-                      onClick={() => setSelectedYear((prev) => prev + 1)}
+                      onClick={() => updateYear(selectedYear + 1)}
                       className="bg-amber-700 text-white p-1 rounded hover:bg-amber-600"
                     >
                       <svg
@@ -800,7 +826,8 @@ export default function BookTracker() {
                               Cancel
                             </button>
                             <button
-                              onClick={saveBooks}
+                              onClick={() => saveBooks(selectedYear)}
+
                               className="bg-amber-700 hover:bg-amber-600 text-white font-medium py-2 px-4 rounded"
                             >
                               Save
@@ -839,3 +866,6 @@ export default function BookTracker() {
     </>
   );
 }
+
+
+
