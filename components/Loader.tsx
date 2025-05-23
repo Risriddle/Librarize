@@ -6,10 +6,10 @@ const Loader = () => {
     const audio = new Audio('/sounds/page-flip.mp3');
     audio.volume = 0.3;
 
-    let interval;
+    
 
     // Start flipping loop
-    interval = setInterval(() => {
+    const interval = setInterval(() => {
       audio.currentTime = 0;
       audio.play();
     }, 600); // natural flip pace
