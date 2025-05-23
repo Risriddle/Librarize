@@ -1,7 +1,25 @@
-import React from 'react';
+import React,{useEffect} from 'react';
 import styled from 'styled-components';
 
 const Loader = () => {
+   useEffect(() => {
+    const audio = new Audio('/sounds/page-flip.mp3');
+    audio.volume = 0.3;
+
+    let interval;
+
+    // Start flipping loop
+    interval = setInterval(() => {
+      audio.currentTime = 0;
+      audio.play();
+    }, 600); // natural flip pace
+
+    return () => {
+      clearInterval(interval); // stop loop when loader unmounts
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, []);
   return (
     <StyledWrapper>
       <div className="loader fixed inset-0 z-50 flex items-center justify-center bg-amber-950 bg-opacity-70 backdrop-blur-sm">
